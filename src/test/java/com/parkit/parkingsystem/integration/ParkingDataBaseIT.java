@@ -1,6 +1,8 @@
 package com.parkit.parkingsystem.integration;
 
+import com.parkit.parkingsystem.constants.Fare;
 import com.parkit.parkingsystem.constants.ParkingType;
+
 import com.parkit.parkingsystem.dao.ParkingSpotDAO;
 import com.parkit.parkingsystem.dao.TicketDAO;
 import com.parkit.parkingsystem.integration.config.DataBaseTestConfig;
@@ -94,5 +96,37 @@ public class ParkingDataBaseIT {
 		assertEquals(ticket.getPrice(), ticketDAO.getTicket("ABCDEF").getPrice());
 
 	}
+	
+	@Test
+	public void calculateFareCarForARecurringUser() throws Exception {
+		when(inputReaderUtil.readSelection()).thenReturn(1);
+		when(inputReaderUtil.readVehicleRegistrationNumber()).thenReturn("ABCDEF");
+		Date inTime = new Date();
+		inTime.setTime(System.currentTimeMillis() - (60 * 60 * 1000));
+		ParkingService parkingService1 = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
+		parkingService1.processIncomingVehicle();
+		parkingService1.processExitingVehicle();
+		
+		ParkingService parkingService2 = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
+		parkingService2.processIncomingVehicle();
+		Ticket ticket = ticketDAO.getTicket("ABCDEF");
+		ticket.setInTime(inTime);
+		ticketDAO.saveTicket(ticket);
+		parkingService2.processExitingVehicle();
+		double price = ticketDAO.getTicket("ABCDEF").getPrice();
+		assertEquals(0.95 * Fare.CAR_RATE_PER_HOUR, price);
+	}
+
+	@Test
+	public void calculateFareBikeForARecurringUser() throws Exception {
+		when(inputReaderUtil.readSelection()).thenReturn(2);
+		when(inputReaderUtil.readVehicleRegistrationNumber()).thenReturn("ABCDEF");
+		ParkingService parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
+		parkingService.processIncomingVehicle();
+		parkingService.processExitingVehicle();
+		double price = ticketDAO.getTicket("ABCDEF").getPrice();
+		assertEquals(0.95 * Fare.BIKE_RATE_PER_HOUR, price);
+	}
+
 
 }

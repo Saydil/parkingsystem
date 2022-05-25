@@ -5,6 +5,7 @@ import com.parkit.parkingsystem.dao.TicketDAO;
 import com.parkit.parkingsystem.model.Ticket;
 
 public class FareCalculatorService {
+
 	TicketDAO ticketDAO = new TicketDAO();
 
 	public void calculateFare(Ticket ticket) {
@@ -19,56 +20,33 @@ public class FareCalculatorService {
 
 		// TODO: Some tests are failing here. Need to check if this logic is correct
 		double duration = (outHour - inHour) / 60.0;
-		if (ticketDAO.getTicket(ticket.getVehicleRegNumber()) != null) {
-			switch (ticket.getParkingSpot().getParkingType()) {
-			case CAR: {
-				if (duration <= 0.5) {
-					ticket.setPrice(0);
-					break;
-				} else {
-					ticket.setPrice((duration * Fare.CAR_RATE_PER_HOUR)*0.95);
-					break;
-				}
-			}
-			case BIKE: {
-				if (duration <= 0.5) {
-					ticket.setPrice(0);
-					break;
-				} else {
-					ticket.setPrice((duration * Fare.BIKE_RATE_PER_HOUR)*0.95);
-					break;
-				}
 
+		switch (ticket.getParkingSpot().getParkingType()) {
+		case CAR: {
+			if (duration <= 0.5) {
+				ticket.setPrice(0);
+				break;
+			} else {
+				ticket.setPrice(duration * Fare.CAR_RATE_PER_HOUR);
+				break;
 			}
-			default:
-				throw new IllegalArgumentException("Unkown Parking Type");
+		}
+		case BIKE: {
+			if (duration <= 0.5) {
+				ticket.setPrice(0);
+				break;
+			} else {
+				ticket.setPrice(duration * Fare.BIKE_RATE_PER_HOUR);
+				break;
 			}
 
-		}else {
-			switch (ticket.getParkingSpot().getParkingType()) {
-			case CAR: {
-				if (duration <= 0.5) {
-					ticket.setPrice(0);
-					break;
-				} else {
-					ticket.setPrice(duration * Fare.CAR_RATE_PER_HOUR);
-					break;
-				}
-			}
-			case BIKE: {
-				if (duration <= 0.5) {
-					ticket.setPrice(0);
-					break;
-				} else {
-					ticket.setPrice(duration * Fare.BIKE_RATE_PER_HOUR);
-					break;
-				}
+		}
+		default:
+			throw new IllegalArgumentException("Unkown Parking Type");
+		}
 
-			}
-			default:
-				throw new IllegalArgumentException("Unkown Parking Type");
-			}
-
+		if (ticketDAO.checkRecurrence(ticket)) {
+			ticket.setPrice(0.95 * ticket.getPrice());
 		}
 
 	}

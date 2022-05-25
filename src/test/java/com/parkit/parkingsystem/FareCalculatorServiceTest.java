@@ -2,52 +2,46 @@ package com.parkit.parkingsystem;
 
 import com.parkit.parkingsystem.constants.Fare;
 import com.parkit.parkingsystem.constants.ParkingType;
-import com.parkit.parkingsystem.dao.ParkingSpotDAO;
-import com.parkit.parkingsystem.dao.TicketDAO;
-import com.parkit.parkingsystem.integration.service.DataBasePrepareService;
 import com.parkit.parkingsystem.model.ParkingSpot;
 import com.parkit.parkingsystem.model.Ticket;
 import com.parkit.parkingsystem.service.FareCalculatorService;
-import com.parkit.parkingsystem.service.ParkingService;
-import com.parkit.parkingsystem.util.InputReaderUtil;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
 
 import java.util.Date;
-
+@ExtendWith(MockitoExtension.class)
 public class FareCalculatorServiceTest {
 
 	private static FareCalculatorService fareCalculatorService;
 	private Ticket ticket;
-	private static ParkingSpotDAO parkingSpotDAO;
-	private static TicketDAO ticketDAO;
-	private static DataBasePrepareService dataBasePrepareService;
-	@Mock
-	private static InputReaderUtil inputReaderUtil;
+
+	
 
 	@BeforeAll
 	private static void setUp() {
 		fareCalculatorService = new FareCalculatorService();
+
 
 	}
 
 	@BeforeEach
 	private void setUpPerTest() {
 		ticket = new Ticket();
+
 	}
+	
 
 	/*@AfterAll
 	private void tearDown() {
-		dataBasePrepareService = new DataBasePrepareService();
-		dataBasePrepareService.clearDataBaseEntries();
+		
 	}*/
 
+	
 	@Test
 	public void calculateFareCar() {
 		Date inTime = new Date();
@@ -185,24 +179,5 @@ public class FareCalculatorServiceTest {
 		assertEquals((0 * Fare.CAR_RATE_PER_HOUR), ticket.getPrice());
 	}
 
-	@Test
-	public void calculateFareCarForARecurringUser() throws Exception {
-		when(inputReaderUtil.readSelection()).thenReturn(1);
-		when(inputReaderUtil.readVehicleRegistrationNumber()).thenReturn("ABCDEF");
-		ParkingService parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
-		parkingService.processIncomingVehicle();
-
-		assertEquals(0.95 * Fare.CAR_RATE_PER_HOUR, ticket.getPrice());
-	}
-
-	@Test
-	public void calculateFareBikeForARecurringUser() throws Exception {
-		when(inputReaderUtil.readSelection()).thenReturn(2);
-		when(inputReaderUtil.readVehicleRegistrationNumber()).thenReturn("ABCDEF");
-		ParkingService parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
-		parkingService.processIncomingVehicle();
-
-		assertEquals(0.95 * Fare.BIKE_RATE_PER_HOUR, ticket.getPrice());
-	}
-
+	
 }
