@@ -89,7 +89,7 @@ public class ParkingDataBaseIT {
 		ticket.setInTime(ticketDAO.getTicket("ABCDEF").getInTime());
 		ticket.setOutTime(outTime);
 		ticket.setParkingSpot(parkingspot);
-		FareCalculatorService fareCalculatorService = new FareCalculatorService();
+		FareCalculatorService fareCalculatorService = new FareCalculatorService(ticketDAO);
 		fareCalculatorService.calculateFare(ticket);		
 		assertNotNull(ticketDAO.getTicket("ABCDEF").getOutTime());
 		assertNotNull(ticketDAO.getTicket("ABCDEF").getPrice());
@@ -101,12 +101,11 @@ public class ParkingDataBaseIT {
 	public void calculateFareCarForARecurringUser() throws Exception {
 		when(inputReaderUtil.readSelection()).thenReturn(1);
 		when(inputReaderUtil.readVehicleRegistrationNumber()).thenReturn("ABCDEF");
-		Date inTime = new Date();
-		inTime.setTime(System.currentTimeMillis() - (60 * 60 * 1000));
 		ParkingService parkingService1 = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
 		parkingService1.processIncomingVehicle();
 		parkingService1.processExitingVehicle();
-		
+		Date inTime = new Date();
+		inTime.setTime(System.currentTimeMillis() - (60 * 60 * 1000));//We move back one hour to avoid the reduction of 30 minutes
 		ParkingService parkingService2 = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
 		parkingService2.processIncomingVehicle();
 		Ticket ticket = ticketDAO.getTicket("ABCDEF");
@@ -121,9 +120,17 @@ public class ParkingDataBaseIT {
 	public void calculateFareBikeForARecurringUser() throws Exception {
 		when(inputReaderUtil.readSelection()).thenReturn(2);
 		when(inputReaderUtil.readVehicleRegistrationNumber()).thenReturn("ABCDEF");
-		ParkingService parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
-		parkingService.processIncomingVehicle();
-		parkingService.processExitingVehicle();
+		ParkingService parkingService1 = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
+		parkingService1.processIncomingVehicle();
+		parkingService1.processExitingVehicle();
+		Date inTime = new Date();
+		inTime.setTime(System.currentTimeMillis() - (60 * 60 * 1000)); //We move back one hour to avoid the reduction of 30 minutes
+		ParkingService parkingService2 = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
+		parkingService2.processIncomingVehicle();
+		Ticket ticket = ticketDAO.getTicket("ABCDEF");
+		ticket.setInTime(inTime);
+		ticketDAO.saveTicket(ticket);
+		parkingService2.processExitingVehicle();
 		double price = ticketDAO.getTicket("ABCDEF").getPrice();
 		assertEquals(0.95 * Fare.BIKE_RATE_PER_HOUR, price);
 	}

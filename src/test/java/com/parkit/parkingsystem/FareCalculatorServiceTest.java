@@ -2,6 +2,7 @@ package com.parkit.parkingsystem;
 
 import com.parkit.parkingsystem.constants.Fare;
 import com.parkit.parkingsystem.constants.ParkingType;
+import com.parkit.parkingsystem.dao.TicketDAO;
 import com.parkit.parkingsystem.model.ParkingSpot;
 import com.parkit.parkingsystem.model.Ticket;
 import com.parkit.parkingsystem.service.FareCalculatorService;
@@ -19,13 +20,14 @@ public class FareCalculatorServiceTest {
 
 	private static FareCalculatorService fareCalculatorService;
 	private Ticket ticket;
+	private static TicketDAO ticketDAO = new TicketDAO();
 
 	
 
 	@BeforeAll
 	private static void setUp() {
-		fareCalculatorService = new FareCalculatorService();
-
+		fareCalculatorService = new FareCalculatorService(ticketDAO);
+		
 
 	}
 
